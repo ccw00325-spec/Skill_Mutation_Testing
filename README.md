@@ -13,3 +13,7 @@ Codex 스킬 경로에 [mutation-testing 폴더](mutation-testing)를 배치한 
 [스킬 본문](mutation-testing/SKILL.md) · [도구 설정과 CI](mutation-testing/references/tools.md)
 
 첨부 사례에서 451은 작성된 테스트 수입니다. 변이 550개 중 273개가 검출됐고, 161개가 살아남았으며 116개는 실행되지 않았습니다. 한 프로젝트의 변이 결과이므로 모든 AI 테스트의 실패율로 해석할 수 없습니다.
+
+## 라이선스
+
+Apache License 2.0을 적용합니다. 저작권은 Chan Woo Cho ([@ccw00325-spec](https://github.com/ccw00325-spec))에게 있습니다. 재배포 시 Apache 2.0 제4조에 따라 관련 저작권과 출처 고지를 보존해야 합니다. [LICENSE](LICENSE) · [NOTICE](NOTICE)
