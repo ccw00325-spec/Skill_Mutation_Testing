@@ -76,3 +76,7 @@ Vitest를 사용하는 두 패키지에서 서로 다른 테스트 배치 규칙
 ## 라이선스
 
 Apache License 2.0을 적용합니다. 저작권은 Chan Woo Cho ([@ccw00325-spec](https://github.com/ccw00325-spec))에게 있습니다. 재배포 시 제4조에 따라 관련 저작권과 출처 고지를 보존해야 합니다. [LICENSE](LICENSE) · [NOTICE](NOTICE)
+
+스킬을 소개하거나 사용 사례를 공유할 때는 다음처럼 출처를 적어 주세요.
+
+> Skill Mutation Testing — Chan Woo Cho (@ccw00325-spec), https://github.com/ccw00325-spec/Skill_Mutation_Testing
