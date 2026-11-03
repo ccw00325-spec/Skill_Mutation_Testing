@@ -12,6 +12,14 @@ Git 변경 목록은 저장소 루트 기준으로 한 번 계산한다. 각 대
 
 Stryker 설정 경로는 필요할 때 위치 인자로 전달한다. 예를 들어 `packages/billing`에서 `npm exec --offline -- stryker run stryker.config.json --mutate src/domain/fee.ts --force`를 실행한다. `--mutate`는 설정의 기존 대상 배열을 대체하므로, 동적으로 계산한 대상에도 기존 제외 규칙을 적용한다. 여러 패키지가 바뀌면 설정과 실행 위치별로 나누고 리포트·증분 캐시도 분리한다. 패키지 소유권이나 설정을 확정할 수 없는 파일은 별도로 보고한다. [Stryker 실행 옵션](https://stryker-mutator.io/docs/stryker-js/usage/) · [Stryker 설정](https://stryker-mutator.io/docs/stryker-js/configuration/)
 
+## 테스트 파일 위치와 발견 확인
+
+대상과 같은 패키지의 유사 단위 테스트를 찾아 러너의 탐색 루트·파일 패턴·제외 설정과 대조한다. 예를 들어 `src/domain/__tests__/fee.spec.ts`를 쓰는 패키지라면 그 패턴을 따르고, `test/domain/fee.test.ts`를 쓰는 패키지라면 별도 테스트 루트를 따른다. 비슷한 파일이 있으면 기존 테스트에 케이스를 추가한다. JVM은 모듈의 테스트 소스 세트와 엔진의 발견 규칙을 확인한다. 기존 실행 명령의 출력에서 새 케이스가 발견·실행·통과했는지 확인한 뒤 변이를 다시 실행한다. 발견되지 않았다면 경로나 러너 설정을 먼저 점검한다.
+
+## 선행 빌드가 필요한 경우
+
+패키지 스크립트와 기존 CI에서 테스트의 실제 입력을 확인한다. 테스트가 의존 워크스페이스의 `dist/`나 생성 파일을 읽으면 기존 명령으로 필요한 산출물을 준비한 뒤 원본 테스트를 실행한다. 러너가 TypeScript를 직접 변환한다면 별도의 `tsc` 단계를 기본으로 추가할 필요가 없다. 테스트가 변이 대상의 컴파일 산출물을 읽는 경우에는, 테스트가 이전 `dist/` 대신 변이가 적용된 소스에서 생성한 산출물을 읽는지 확인한다. 필요하면 Stryker `buildCommand`에 기존 변환 명령을 지정한다. 이 명령은 코드에 변이 처리를 적용한 뒤 테스트하기 전에 실행된다. [StrykerJS buildCommand](https://stryker-mutator.io/docs/stryker-js/configuration/#buildcommand-string)
+
 ## JS/TS
 
 프로젝트의 로컬 StrykerJS와 테스트 러너를 사용한다. Jest 또는 Vitest처럼 지원되는 러너에서는 변이별 실행 테스트를 줄일 수 있다. command runner는 지정한 명령 전체를 실행하므로 per-test 최적화를 가정하지 않는다. [설정](https://stryker-mutator.io/docs/stryker-js/configuration/)

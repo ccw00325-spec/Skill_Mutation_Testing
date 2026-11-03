@@ -45,6 +45,8 @@
 
 테스트를 보강한 뒤에는 원본에서 통과하는지 확인하고, 같은 변이를 캐시 없이 다시 실행합니다. [AI에 전달할 결과와 재실행 방법](mutation-testing/references/tools.md)
 
+테스트 파일은 대상과 같은 패키지의 기존 관례에 맞춥니다. 새 파일이 필요하면 러너가 찾는 위치와 이름을 확인하고, 실행 결과에 새 케이스가 실제로 포함됐는지 확인합니다.
+
 ## 도구와 CI
 
 JS·TypeScript에는 **StrykerJS**, Java·Kotlin JVM에는 **PIT**를 사용합니다. JS·TS용 PR 템플릿과 Git 변경 범위 계산 스크립트가 들어 있습니다. PIT는 변경된 소스를 모듈별 클래스 이름에 매핑해 범위를 지정합니다. [도구 설정과 PR 템플릿](mutation-testing/references/tools.md)
@@ -54,6 +56,8 @@ JS·TypeScript에는 **StrykerJS**, Java·Kotlin JVM에는 **PIT**를 사용합�
 ### 모노레포와 느린 PR 검사
 
 바뀐 파일은 소유 패키지별로 나눕니다. 예를 들어 `packages/billing/src/domain/fee.ts`를 저장소 루트에서 실행하면 전체 경로를 사용하고, `packages/billing`에서 실행하면 `src/domain/fee.ts`를 사용합니다. 패키지별 실행 위치·설정·리포트와 캐시를 구분합니다. PIT는 JVM 모듈과 컴파일된 클래스 이름을 확인합니다.
+
+다른 패키지의 빌드 결과나 생성 파일이 테스트에 필요하다면 기존 CI 명령으로 필요한 산출물만 준비합니다. TypeScript를 러너가 직접 변환하는 패키지는 그 실행 방식을 사용합니다. [테스트 위치와 선행 빌드](mutation-testing/references/tools.md)
 
 타임아웃은 원본 실행 시간을 기준으로 조정합니다. StrykerJS는 `timeoutFactor`와 `timeoutMS`, PIT Maven은 `timeoutFactor`와 `timeoutConstant`를 사용합니다. 느린 스위트를 PR에서 분리할 때는 빠진 범위를 기록하고 별도 검사에서 실행합니다. [모노레포 예시와 타임아웃 설정](mutation-testing/references/tools.md)
 
