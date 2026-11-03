@@ -50,6 +50,19 @@ mvn -DwithHistory -DtargetClasses=com.example.domain.DateWindow test-compile org
 
 Gradle은 설치된 PIT 플러그인의 `pitest` 태스크 설정에서 `targetClasses`와 히스토리를 지정한다. 히스토리 경로와 엔진 호환성을 확인한 뒤 재사용하고 보강 검증은 빈 히스토리로 수행한다. [PIT Maven](https://pitest.org/quickstart/maven/) · [PIT 증분 분석](https://pitest.org/quickstart/incremental_analysis/)
 
+## 실행 증거와 보고서 비교
+
+패키지별로 `Git 경로 → 소유 모듈 → 실행 위치 → 설정과 러너 → 실행 기준 대상`을 기록하고 원본 테스트 명령, 새 케이스가 실행·통과한 출력, 보강 전후 리포트 경로를 남긴다. 예를 들어 `packages/billing/src/domain/fee.js → billing → packages/billing → stryker.config.json + Vitest → src/domain/fee.js`이다. 다른 패키지의 테스트 발견 규칙은 별도로 확인한다. 새 케이스가 실행 목록에 없거나 건너뛰었다면 변이 보강 성공으로 기록하지 않는다.
+
+Python 3 표준 라이브러리만 사용하는 비교 도구에 정확한 범위를 전달한다. 경로는 각 Stryker 리포트의 키, JVM은 PIT의 컴파일된 클래스 이름을 사용한다.
+
+```sh
+python mutation-testing/scripts/compare.py stryker before.json after.json src/domain/fee.js
+python mutation-testing/scripts/compare.py pit before.xml after.xml demo.domain.Fees
+```
+
+같은 모듈, 동일한 원본 소스와 도구·변이 설정에서 테스트만 보강한 두 실행을 비교한다. PIT는 같은 프로덕션 바이트코드를 사용한다. 비교 도구는 상태별 수, 동일 변이의 상태 전환, 누락 대상을 출력한다. 비교 범위가 비거나 변이 목록이 달라지면 종료 코드 `2`를 반환한다. `completeMatch`는 변이 목록 일치만 뜻한다. PIT의 `Test strength`는 미실행 변이를 빼고 계산하므로 전체 변이 점수·미실행 수와 함께 기록한다. [PIT Maven 지표](https://pitest.org/quickstart/maven/)
+
 ## 타임아웃과 느린 테스트
 
 1. 같은 설정과 테스트 범위에서 원본 실행 시간을 확인한다. 원본도 느리거나 멈추면 초기화, 모킹, 외부 I/O, 자원 정리를 먼저 점검한다. 변이에서만 재현되면 대상 하나와 낮은 동시성으로 재실행해 무한 루프인지 구분한다.
