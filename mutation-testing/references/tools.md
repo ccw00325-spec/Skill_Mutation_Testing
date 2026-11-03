@@ -1,5 +1,17 @@
 # 도구와 PR 검사
 
+## 모노레포에서 실행 위치 정하기
+
+Git 변경 목록은 저장소 루트 기준으로 한 번 계산한다. 각 대상의 소유 패키지는 workspace 선언, 패키지의 테스트 스크립트와 CI 설정으로 확인한다. JVM에서는 Maven reactor 또는 Gradle 프로젝트 구성을 기준으로 모듈을 찾는다. 가장 가까운 설정 파일은 단서로 활용한다. 공유 설정이나 중첩 모듈이 있으면 실제 CI에서 쓰는 실행 위치와 설정을 우선한다.
+
+| 변경 파일 | 실행 위치 | 변이 대상 |
+| --- | --- | --- |
+| `packages/billing/src/domain/fee.ts` | `packages/billing`, 패키지 전용 설정 | `src/domain/fee.ts` |
+| `packages/billing/src/domain/fee.ts` | 저장소 루트, 공유 설정 | `packages/billing/src/domain/fee.ts` |
+| `modules/billing/src/main/java/com/example/DateWindow.java` | `billing` 모듈을 선택하는 Maven/Gradle 실행 | 컴파일 결과에서 확인한 `com.example.DateWindow` |
+
+Stryker 설정 경로는 필요할 때 위치 인자로 전달한다. 예를 들어 `packages/billing`에서 `npm exec --offline -- stryker run stryker.config.json --mutate src/domain/fee.ts --force`를 실행한다. `--mutate`는 설정의 기존 대상 배열을 대체하므로, 동적으로 계산한 대상에도 기존 제외 규칙을 적용한다. 여러 패키지가 바뀌면 설정과 실행 위치별로 나누고 리포트·증분 캐시도 분리한다. 패키지 소유권이나 설정을 확정할 수 없는 파일은 별도로 보고한다. [Stryker 실행 옵션](https://stryker-mutator.io/docs/stryker-js/usage/) · [Stryker 설정](https://stryker-mutator.io/docs/stryker-js/configuration/)
+
 ## JS/TS
 
 프로젝트의 로컬 StrykerJS와 테스트 러너를 사용한다. Jest 또는 Vitest처럼 지원되는 러너에서는 변이별 실행 테스트를 줄일 수 있다. command runner는 지정한 명령 전체를 실행하므로 per-test 최적화를 가정하지 않는다. [설정](https://stryker-mutator.io/docs/stryker-js/configuration/)
@@ -21,6 +33,12 @@ mvn -DwithHistory -DtargetClasses=com.example.domain.DateWindow test-compile org
 ```
 
 Gradle은 설치된 PIT 플러그인의 `pitest` 태스크 설정에서 `targetClasses`와 히스토리를 지정한다. 히스토리 경로와 엔진 호환성을 확인한 뒤 재사용하고 보강 검증은 빈 히스토리로 수행한다. [PIT Maven](https://pitest.org/quickstart/maven/) · [PIT 증분 분석](https://pitest.org/quickstart/incremental_analysis/)
+
+## 타임아웃과 느린 테스트
+
+1. 같은 설정과 테스트 범위에서 원본 실행 시간을 확인한다. 원본도 느리거나 멈추면 초기화, 모킹, 외부 I/O, 자원 정리를 먼저 점검한다. 변이에서만 재현되면 대상 하나와 낮은 동시성으로 재실행해 무한 루프인지 구분한다.
+2. StrykerJS는 `timeoutFactor`로 원본 실행 시간에 비례한 여유를, `timeoutMS`로 고정 여유를 준다. 시작 단계 제한은 `dryRunTimeoutMinutes`로 따로 조정한다. PIT Maven은 비례 계수 `timeoutFactor`와 밀리초 단위 `timeoutConstant`를 사용한다. 관측한 시간에 근거해 필요한 만큼만 조정하고 CI 작업 전체에도 시간 제한을 둔다. [Stryker 타임아웃](https://stryker-mutator.io/docs/stryker-js/configuration/#timeoutms-number) · [PIT Maven 옵션](https://pitest.org/quickstart/maven/)
+3. 느린 스위트는 해당 범위의 동작을 검증하는 다른 테스트가 있는지 확인한 뒤 PR 변이 작업에서 분리한다. Stryker에서는 러너의 전용 테스트 설정으로 범위를 나누고, PIT에서는 필요하면 `excludedTestClasses`를 사용한다. 빠진 경로와 제외 사유를 기록하고, 별도 전체 검사에서 느린 스위트까지 돌린다. 제외 전후 점수는 같은 범위끼리 비교한다. 타임아웃은 테스트의 단언으로 변이를 잡은 결과와 별도로 집계한다.
 
 ## PR CI
 
