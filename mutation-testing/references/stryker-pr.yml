@@ -1,0 +1,39 @@
+# Copy to .github/workflows/ after configuring local Stryker and an npm "mutation": "stryker run" script.
+# Copy scope.mjs to scripts/mutation-scope.mjs and adjust the domain directory.
+name: PR mutation check
+on: pull_request
+permissions:
+  contents: read
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm test
+      - name: Mutate changed domain files
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          node scripts/mutation-scope.mjs "$BASE_SHA" src/domain/ > mutation-scope.json
+          targets="$(node -e 'const {targets}=require("./mutation-scope.json"); if(targets.some(p=>!/^[A-Za-z0-9_./-]+$/.test(p)||p.startsWith("-")||!/\.[cm]?[jt]s$/.test(p))) process.exit(2); process.stdout.write(targets.join(","))')" || exit 2
+          if [ -z "$targets" ]; then
+            echo "::notice::No changed domain source. Test-only changes may need a manually selected scope."
+            exit 0
+          fi
+          npm run mutation -- --mutate "$targets" --force --reporters clear-text,json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mutation-results
+          path: |
+            mutation-scope.json
+            reports/mutation/mutation.json
