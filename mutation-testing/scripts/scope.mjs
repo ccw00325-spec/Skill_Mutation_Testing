@@ -18,6 +18,7 @@ const targets = changed.filter(file =>
   prefixes.some(prefix => file.startsWith(prefix)) &&
   /\.(?:[cm]?[jt]s|java|kt)$/i.test(file) &&
   !/(?:^|\/)(?:tests?|__tests__|ui|views?|migrations?|schema|generated|fixtures?)(?:\/|$)|\.(?:test|spec|d)\.[^.]+$/i.test(file) &&
+  !/(?:^|\/)(?:[^/]*[._-])?(?:schema|migration)(?:[._-][^/]*)?\.[^.]+$/i.test(file) &&
   !/(?:^|\/)[^/]*(?:Test|Tests|Spec)\.(?:java|kt)$/.test(file)
 );
 console.log(JSON.stringify({ mergeBase, targets, status: targets.length ? "scoped" : "no-targets" }, null, 2));

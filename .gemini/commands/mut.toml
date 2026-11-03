@@ -1,0 +1,6 @@
+description = "Run scoped mutation testing and repair weak tests"
+prompt = """
+Read mutation-testing/SKILL.md from this project's root. Apply its workflow to the scope below. Use existing local tools and honor execution permissions.
+
+Requested scope: {{args}}
+"""

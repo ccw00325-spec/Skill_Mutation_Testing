@@ -1,0 +1,1 @@
+Read `mutation-testing/SKILL.md` from this project's root and apply it to the requested scope. Run the baseline first, limit mutants to eligible changed business logic, and verify any added behavioral test against the original and the mutant.

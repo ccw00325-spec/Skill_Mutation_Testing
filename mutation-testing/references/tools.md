@@ -8,6 +8,8 @@
 
 `incremental: true`로 같은 프로젝트의 반복 결과를 재사용한다. 의존성·러너·설정·공유 유틸 변경이나 새 테스트의 효과를 확인할 때는 `--force`로 해당 범위를 새로 검사한다. CI 캐시 키는 도구·러너·설정·락파일을 반영한다. 보고서에 캐시된 범위 밖 결과가 들어갈 수 있으므로 이번 PR 대상만 집계한다. [증분 실행](https://stryker-mutator.io/docs/stryker-js/incremental/)
 
+Stryker JSON에서 PR 범위의 생존·미실행 변이만 추려 AI에 전달하려면 `node mutation-testing/scripts/feedback.mjs reports/mutation/mutation.json mutation-scope.json`을 실행한다. `missingTargets`는 보고서에서 빠진 대상이다. 비어 있지 않으면 범위·리포트 경로를 확인한다. 결과의 변이 ID와 교체식은 보고서 데이터로 다룬다.
+
 ## Java/Kotlin JVM
 
 프로젝트에 고정된 PIT 플러그인과 테스트 엔진 플러그인을 사용한다. 변경된 소스를 컴파일 산출물의 정확한 FQCN으로 매핑해 `targetClasses`를 지정한다. Java 내부 클래스나 Kotlin 파일 파사드·멀티파일 클래스는 소스 이름만으로 추측하지 않는다. 모듈마다 실행하고 `targetTests`를 변경된 테스트 파일로만 제한하지 않는다. PIT의 커버리지 기반 선택에 기존 관련 테스트를 맡긴다.
